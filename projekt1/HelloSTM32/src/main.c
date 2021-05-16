@@ -21,6 +21,8 @@ void delay(int time)
 int main(void)
 {
 
+	SystemCoreClock = 8000000;	// taktowanie 8Mhz
+
 	HAL_Init();
 
 
@@ -41,6 +43,20 @@ int main(void)
 	gpio.Pull = GPIO_PULLUP;	//wlaczamy rezystro podciagajacy
 	HAL_GPIO_Init(GPIOC, &gpio);	//port GPIOC
 
+
+	while (1)
+	{
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5, GPIO_PIN_SET);
+		HAL_Delay(100);
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5, GPIO_PIN_RESET);
+		HAL_Delay(100);
+
+	}
+
+
+
+
+	/*
 	while(1)
 	{
 		if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13) == GPIO_PIN_RESET) //// jesli przycisk jest przycisniety,
@@ -53,6 +69,7 @@ int main(void)
 		}
 
 	}
+	*/
 
 	/*
 	while(1)
