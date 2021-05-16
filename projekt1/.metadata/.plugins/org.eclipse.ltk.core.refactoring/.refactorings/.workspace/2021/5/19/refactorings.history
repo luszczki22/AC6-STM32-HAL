@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;HelloSTM32/Utilities&apos;" deleteContents="false" description="Delete resource &apos;HelloSTM32/Utilities&apos;" element1="/HelloSTM32/Utilities" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1620688525228"/>
+</session>

@@ -1,0 +1,6 @@
+00:46:14 **** Incremental Build of configuration Debug for project HelloSTM32 ****
+make -j4 all 
+make: Nothing to be done for 'all'.
+
+00:46:14 Build Finished (took 263ms)
+
