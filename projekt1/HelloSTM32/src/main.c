@@ -10,11 +10,35 @@
 
 
 #include "stm32f1xx.h"
-#include "stm32f1xx_nucleo.h"
-			
+
+void delay(int time)
+{
+	int i;
+	for(i=0; i < time * 570; i++) {};
+}
+
 
 int main(void)
 {
 
-	for(;;);
+	HAL_Init();
+
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+
+	GPIO_InitTypeDef gpio; // obiekt gpio bêd¹cy konfiguracj¹ portów GPIO
+	gpio.Pin= GPIO_PIN_5;	// konfigurujemy pin 5
+	gpio.Mode = GPIO_MODE_OUTPUT_PP;	// jako wyjœcie
+	gpio.Pull = GPIO_NOPULL;	// rezystory podci¹gaj¹ce s¹ wy³¹czone
+	gpio.Speed = GPIO_SPEED_FREQ_LOW;	// wystarcz¹ nieskie czêstotliwoœci prze³¹czania
+	HAL_GPIO_Init(GPIOA, &gpio);	// inicjalizacja modu³u GPIOA
+
+	while(1)
+	{
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+		delay(100);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
+		delay(400);
+	}
+
+
 }
