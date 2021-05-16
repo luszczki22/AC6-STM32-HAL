@@ -17,6 +17,11 @@ void delay(int time)
 	for(i=0; i < time * 570; i++) {};
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	//zmien stan diody
+}
+
 
 int main(void)
 {
@@ -39,29 +44,31 @@ int main(void)
 	HAL_GPIO_Init(GPIOA, &gpio);	// inicjalizacja modu³u GPIOA
 
 	gpio.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|
-			 GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
+			   GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
 	gpio.Mode = GPIO_MODE_OUTPUT_PP;	// jako wyjœcie
 	gpio.Pull = GPIO_NOPULL;	// rezystory podci¹gaj¹ce s¹ wy³¹czone
 	gpio.Speed = GPIO_SPEED_FREQ_LOW;	// wystarcz¹ nieskie czêstotliwoœci prze³¹czania
 	HAL_GPIO_Init(GPIOC, &gpio);	// inicjalizacja modu³u GPIOA
 
 	gpio.Pin = GPIO_PIN_13; //konfigurujemy pin 13
-	gpio.Mode = GPIO_MODE_INPUT; ///jako wejscie
+	gpio.Mode = GPIO_MODE_IT_RISING_FALLING; ///jako wejscie
 	gpio.Pull = GPIO_PULLUP;	//wlaczamy rezystro podciagajacy
 	HAL_GPIO_Init(GPIOC, &gpio);	//port GPIOC
+
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+
 
 	uint32_t led = 0;
 
 	while (1)
 	{
-		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_SET); //w³¹cz diode
 		HAL_Delay(150);
-		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_RESET);
-		if(++led >= 10) // przejdz do nastepnej
-		{
-			led = 0;
+		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_RESET); //wy³¹cz diode
+		if (++led >= 10) { // przejdz do nastepnej
+		      led = 0;
 		}
-
 
 		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5, GPIO_PIN_SET);
 		HAL_Delay(100);
