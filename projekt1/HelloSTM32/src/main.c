@@ -23,7 +23,11 @@ int main(void)
 
 	HAL_Init();
 
+
 	__HAL_RCC_GPIOA_CLK_ENABLE();
+	//__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	//__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	GPIO_InitTypeDef gpio; // obiekt gpio bêd¹cy konfiguracj¹ portów GPIO
 	gpio.Pin= GPIO_PIN_5;	// konfigurujemy pin 5
@@ -32,6 +36,25 @@ int main(void)
 	gpio.Speed = GPIO_SPEED_FREQ_LOW;	// wystarcz¹ nieskie czêstotliwoœci prze³¹czania
 	HAL_GPIO_Init(GPIOA, &gpio);	// inicjalizacja modu³u GPIOA
 
+	gpio.Pin = GPIO_PIN_13; //konfigurujemy pin 13
+	gpio.Mode = GPIO_MODE_INPUT; ///jako wejscie
+	gpio.Pull = GPIO_PULLUP;	//wlaczamy rezystro podciagajacy
+	HAL_GPIO_Init(GPIOC, &gpio);	//port GPIOC
+
+	while(1)
+	{
+		if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13) == GPIO_PIN_RESET) //// jesli przycisk jest przycisniety,
+		{
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);	//zapal diode
+		}
+		else
+		{
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+		}
+
+	}
+
+	/*
 	while(1)
 	{
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
@@ -39,6 +62,6 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET);
 		delay(400);
 	}
-
+	*/
 
 }
