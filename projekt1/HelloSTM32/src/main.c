@@ -11,6 +11,8 @@
 
 #include "stm32f1xx.h"
 
+volatile uint32_t timer_ms = 0, direction = 0, step = 0;
+
 void delay(int time)
 {
 	int i;
@@ -20,6 +22,7 @@ void delay(int time)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	//zmien stan diody
+	direction ^= 1;
 }
 
 
@@ -66,9 +69,24 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_SET); //w³¹cz diode
 		HAL_Delay(150);
 		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_RESET); //wy³¹cz diode
+		if (direction == 0)
+		{
+			if (++led >= 10)
+			{ // przejdz do nastepnej
+		      led = 0;
+			}
+		}else
+		{
+			if (--led == -1)
+			{ // przejdz do nastepnej
+			  led = 10;
+			}
+		}
+		/*
 		if (++led >= 10) { // przejdz do nastepnej
 		      led = 0;
 		}
+		*/
 
 		/*
 		 *
