@@ -76,8 +76,6 @@ int main(void)
 	gpio.Pull = GPIO_PULLUP;	//wlaczamy rezystro podciagajacy
 	HAL_GPIO_Init(GPIOC, &gpio);	//port GPIOC
 
-
-
 	uart.Instance = USART2;
 	uart.Init.BaudRate = 115200;
 	uart.Init.WordLength = UART_WORDLENGTH_8B;
@@ -90,14 +88,32 @@ int main(void)
 
 	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-
-
 	uint32_t led = 0;
 
 	while (1)
 	{
-		send_string("Hello world!\r\n");
+		send_string("Empty msg!\r\n");
 		HAL_Delay(100);
+
+		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
+		{
+			uint8_t value;
+			HAL_UART_Receive(&uart, &value, 1, 100);
+
+			switch (value)
+			{
+			case 'a':
+				send_string("Recived a\r\n");
+				break;
+			case 'b':
+				send_string("Recived b\r\n");
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
+				break;
+			case 'c':
+				send_string("Recived c\r\n");
+			}
+
+		}
 
 		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_SET); //w³¹cz diode
 		HAL_Delay(150);
