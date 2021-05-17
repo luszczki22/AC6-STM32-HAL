@@ -76,7 +76,7 @@ int main(void)
 	gpio.Pull = GPIO_PULLUP;	//wlaczamy rezystro podciagajacy
 	HAL_GPIO_Init(GPIOC, &gpio);	//port GPIOC
 
-	UART_HandleTypeDef uart;
+
 
 	uart.Instance = USART2;
 	uart.Init.BaudRate = 115200;
