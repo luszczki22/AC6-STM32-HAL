@@ -21,6 +21,17 @@ void delay(int time)
 	for(i=0; i < time * 570; i++) {};
 }
 
+int __io_putchar(int ch)
+{
+	send_char(ch);
+	return ch;
+}
+
+void send_char(char c)
+{
+	HAL_UART_Transmit(&uart, (uint8_t*)&c, 1, 1000);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);	//zmien stan diody
@@ -35,11 +46,8 @@ void send_string(char *s)
 
 int main(void)
 {
-
 	SystemCoreClock = 8000000;	// taktowanie 8Mhz
-
 	HAL_Init();
-
 
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	//__HAL_RCC_GPIOB_CLK_ENABLE();
@@ -94,6 +102,7 @@ int main(void)
 	{
 		send_string("Empty msg!\r\n");
 		HAL_Delay(100);
+		printf("Odczytana wartosc to %d V!\n", 2);
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
