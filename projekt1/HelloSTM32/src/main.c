@@ -7,7 +7,8 @@
   * @brief   Default main function.
   ******************************************************************************
 */
-
+/*//Check your linker flags (project properties > C/C++ Build > Setings > Tool Settings (TAB) > MCU GCC Linker > Miscellaneous > Linker flags),
+//if you are using nanolib “-specs=nano.specs” you need to add “-u _printf_float” to enable float printf. */
 #include <string.h>
 #include "stm32f1xx.h"
 
@@ -23,6 +24,8 @@ void delay(int time)
 
 int __io_putchar(int ch)
 {
+	if(ch == '\n')
+		send_char('\r');
 	send_char(ch);
 	return ch;
 }
@@ -54,6 +57,7 @@ int main(void)
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	//__HAL_RCC_GPIOD_CLK_ENABLE();
 	__HAL_RCC_USART2_CLK_ENABLE();
+	__HAL_RCC_ADC1_CLK_ENABLE();
 
 	GPIO_InitTypeDef gpio; // obiekt gpio bêd¹cy konfiguracj¹ portów GPIO
 	gpio.Pin = GPIO_PIN_5;	// konfigurujemy pin 5
@@ -94,15 +98,40 @@ int main(void)
 	uart.Init.Mode = UART_MODE_TX_RX;
 	HAL_UART_Init(&uart);
 
+	RCC_PeriphCLKInitTypeDef adc_clk;
+	adc_clk.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+	adc_clk.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+	HAL_RCCEx_PeriphCLKConfig(&adc_clk);
+
+	ADC_HandleTypeDef adc;
+	adc.Instance = ADC1;
+	adc.Init.ContinuousConvMode = ENABLE;
+	adc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+	adc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	adc.Init.ScanConvMode = ADC_SCAN_DISABLE;
+	adc.Init.NbrOfConversion = 1;
+	adc.Init.DiscontinuousConvMode = DISABLE;
+	adc.Init.NbrOfDiscConversion = 1;
+	HAL_ADC_Init(&adc);
+
+	HAL_ADCEx_Calibration_Start(&adc);
+
+	ADC_ChannelConfTypeDef adc_ch;
+	adc_ch.Channel = ADC_CHANNEL_VREFINT;
+	adc_ch.Rank = ADC_REGULAR_RANK_1;
+	adc_ch.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
+	HAL_ADC_ConfigChannel(&adc, &adc_ch);
+
+	HAL_ADC_Start(&adc);
+
 	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 	uint32_t led = 0;
 
 	while (1)
 	{
-		send_string("Empty msg!\r\n");
-		HAL_Delay(100);
-		printf("Odczytana wartosc to %d V!\n", 2);
+		uint32_t value = HAL_ADC_GetValue(&adc);
+		printf("Adc = %ld (%.3fV)\r\n", value, value * 3.3f / 4095.0f);
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
