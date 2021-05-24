@@ -24,8 +24,8 @@ void delay(int time)
 
 int __io_putchar(int ch)
 {
-	if(ch == '\n')
-		send_char('\r');
+	//if(ch == '\n')
+	//	send_char('\r');
 	send_char(ch);
 	return ch;
 }
@@ -76,6 +76,10 @@ int main(void)
 	gpio.Pin = GPIO_PIN_3;
 	HAL_GPIO_Init(GPIOA, &gpio);
 
+	gpio.Mode = GPIO_MODE_ANALOG;
+	gpio.Pin = GPIO_PIN_0;
+	HAL_GPIO_Init(GPIOA, &gpio);
+
 	gpio.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|
 			   GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
 	gpio.Mode = GPIO_MODE_OUTPUT_PP;	// jako wyjœcie
@@ -117,7 +121,7 @@ int main(void)
 	HAL_ADCEx_Calibration_Start(&adc);
 
 	ADC_ChannelConfTypeDef adc_ch;
-	adc_ch.Channel = ADC_CHANNEL_VREFINT;
+	adc_ch.Channel = ADC_CHANNEL_0;
 	adc_ch.Rank = ADC_REGULAR_RANK_1;
 	adc_ch.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
 	HAL_ADC_ConfigChannel(&adc, &adc_ch);
