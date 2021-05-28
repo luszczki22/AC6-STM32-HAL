@@ -76,6 +76,8 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 	case HAL_TIM_ACTIVE_CHANNEL_4:
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
 		break;
+	default:
+		break;
 	}
 }
 
@@ -163,7 +165,7 @@ int main(void)
 
 	tim2.Instance = TIM2;
 	tim2.Init.Period = 2000 - 1;
-	tim2.Init.Prescaler = 8000 - 1;
+	tim2.Init.Prescaler = 800 - 1;
 	tim2.Init.ClockDivision = 0;
 	tim2.Init.CounterMode = TIM_COUNTERMODE_UP;
 	tim2.Init.RepetitionCounter = 0;
@@ -176,10 +178,29 @@ int main(void)
 
 	HAL_TIM_Base_Start_IT(&tim2);
 
-	__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_1, 100);
-	__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_2, 200);
-	__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_3, 500);
-	__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_4, 900);
+	//__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_1, 100);
+	//__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_2, 200);
+	//__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_3, 500);
+	//__HAL_TIM_SET_COMPARE(&tim2, TIM_CHANNEL_4, 900);
+
+	TIM_OC_InitTypeDef oc;
+	oc.OCMode = TIM_OCMODE_TIMING;
+	oc.Pulse = 50;
+	oc.OCPolarity = TIM_OCPOLARITY_HIGH;
+	oc.OCNPolarity =TIM_OCNPOLARITY_LOW;
+	oc.OCFastMode = TIM_OCFAST_ENABLE;
+	oc.OCIdleState = TIM_OCIDLESTATE_SET;
+	oc.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_1);
+
+	oc.Pulse = 100;
+	HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_2);
+
+	oc.Pulse  = 400;
+	HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_3);
+
+	oc.Pulse = 900;
+	HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_4);
 
 	__HAL_TIM_ENABLE_IT(&tim2, TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3|TIM_IT_CC4);
 
