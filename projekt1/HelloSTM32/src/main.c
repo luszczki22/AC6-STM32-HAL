@@ -14,6 +14,7 @@
 
 UART_HandleTypeDef uart;
 TIM_HandleTypeDef tim2;
+TIM_HandleTypeDef tim4;
 
 volatile uint32_t timer_ms = 0, direction = 0, step = 0;
 
@@ -93,6 +94,7 @@ int main(void)
 	__HAL_RCC_USART2_CLK_ENABLE();
 	__HAL_RCC_ADC1_CLK_ENABLE();
 	__HAL_RCC_TIM2_CLK_ENABLE();
+	__HAL_RCC_TIM4_CLK_ENABLE();
 
 	GPIO_InitTypeDef gpio; // obiekt gpio bêd¹cy konfiguracj¹ portów GPIO
 	gpio.Pin = GPIO_PIN_5;	// konfigurujemy pin 5
@@ -126,6 +128,12 @@ int main(void)
 	gpio.Mode = GPIO_MODE_IT_RISING_FALLING; ///jako wejscie
 	gpio.Pull = GPIO_PULLUP;	//wlaczamy rezystro podciagajacy
 	HAL_GPIO_Init(GPIOC, &gpio);	//port GPIOC
+
+	gpio.Mode = GPIO_MODE_AF_PP;
+	gpio.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
+	gpio.Pull = GPIO_NOPULL;
+	gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO(GPIOB, &gpio);
 
 	uart.Instance = USART2;
 	uart.Init.BaudRate = 115200;
@@ -171,6 +179,15 @@ int main(void)
 	tim2.Init.RepetitionCounter = 0;
 	tim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	HAL_TIM_Base_Init(&tim2);
+
+	tim4.Instance = TIM4;
+	tim4.Init.Period = 1000 - 1;
+	tim4.Init.Prescaler = 8000 - 1;
+	tim4.Init.ClockDivision = 0;
+	tim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+	tim4.Init.RepetitionCounter = 0;
+	tim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	HAL_TIM_PWM_Init(&tim4);
 
 
 	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
