@@ -88,7 +88,7 @@ int main(void)
 	HAL_Init();
 
 	__HAL_RCC_GPIOA_CLK_ENABLE();
-	//__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	//__HAL_RCC_GPIOD_CLK_ENABLE();
 	__HAL_RCC_USART2_CLK_ENABLE();
@@ -133,7 +133,7 @@ int main(void)
 	gpio.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
 	gpio.Pull = GPIO_NOPULL;
 	gpio.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO(GPIOB, &gpio);
+	HAL_GPIO_Init(GPIOB, &gpio);
 
 	uart.Instance = USART2;
 	uart.Init.BaudRate = 115200;
@@ -221,6 +221,32 @@ int main(void)
 
 	__HAL_TIM_ENABLE_IT(&tim2, TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3|TIM_IT_CC4);
 
+
+	TIM_OC_InitTypeDef oc2;
+	oc2.OCMode = TIM_OCMODE_PWM1;
+	oc2.Pulse = 100;
+	oc2.OCPolarity = TIM_OCPOLARITY_HIGH;
+	oc2.OCNPolarity = TIM_OCNPOLARITY_LOW;
+	oc2.OCFastMode = TIM_OCFAST_ENABLE;
+	oc2.OCIdleState = TIM_OCIDLESTATE_RESET;
+	oc2.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+	HAL_TIM_PWM_ConfigChannel(&tim4, &oc2, TIM_CHANNEL_1);
+
+	oc2.Pulse = 500;
+	HAL_TIM_PWM_ConfigChannel(&tim4, &oc2, TIM_CHANNEL_2);
+
+	oc2.Pulse = 800;
+	HAL_TIM_PWM_ConfigChannel(&tim4, &oc2, TIM_CHANNEL_3);
+
+	oc2.Pulse = 900;
+	HAL_TIM_PWM_ConfigChannel(&tim4, &oc2, TIM_CHANNEL_4);
+
+	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_4);
+
+
 	uint32_t led = 0;
 
 	while (1)
@@ -248,6 +274,7 @@ int main(void)
 
 		}
 
+		/*
 		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_SET); //w³¹cz diode
 		HAL_Delay(150);
 		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_RESET); //wy³¹cz diode
@@ -264,6 +291,7 @@ int main(void)
 			  led = 10;
 			}
 		}
+		*/
 
 		/*
 		if (++led >= 10) { // przejdz do nastepnej
