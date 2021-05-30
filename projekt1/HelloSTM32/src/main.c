@@ -17,6 +17,7 @@ TIM_HandleTypeDef tim2;
 TIM_HandleTypeDef tim4;
 
 volatile uint32_t timer_ms = 0, direction = 0, step = 0;
+int counter = 0;
 
 void delay(int time)
 {
@@ -80,6 +81,13 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
 	default:
 		break;
 	}
+}
+
+float calc_pwm(float val)
+{
+	const float k = 0.1f;
+	const float x0 = 60.0f;
+	return 300.0f/ (1.0f + exp(-k * val));
 }
 
 int main(void)
@@ -273,6 +281,17 @@ int main(void)
 			}
 
 		}
+
+		float r = 50 * (1.0f + sin(counter / 200.0f));
+		float g = 50 * (1.0f + sin(1.5f * counter / 100.0f));
+		float b = 50 * (1.0f + sin(2.0f * counter / 100.0f));
+		__HAL_TIM_SET_COMPARE(&tim4, TIM_CHANNEL_1, calc_pwm(b));
+		__HAL_TIM_SET_COMPARE(&tim4, TIM_CHANNEL_2, calc_pwm(g));
+		__HAL_TIM_SET_COMPARE(&tim4, TIM_CHANNEL_3, calc_pwm(r));
+
+		HAL_Delay(20);
+		counter++;
+
 
 		/*
 		HAL_GPIO_WritePin(GPIOC, 1 << led, GPIO_PIN_SET); //w³¹cz diode
