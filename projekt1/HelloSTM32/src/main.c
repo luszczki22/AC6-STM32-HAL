@@ -12,12 +12,18 @@
 #include <string.h>
 #include "stm32f1xx.h"
 
+#define BUFFER_SIZE 32
+
 UART_HandleTypeDef uart;
 TIM_HandleTypeDef tim2;
 TIM_HandleTypeDef tim4;
+DMA_HandleTypeDef dma;
 
 volatile uint32_t timer_ms = 0, direction = 0, step = 0;
 int counter = 0;
+
+uint8_t src_buffer[BUFFER_SIZE];
+uint8_t dst_buffer[BUFFER_SIZE];
 
 void delay(int time)
 {
@@ -87,7 +93,13 @@ float calc_pwm(float val)
 {
 	const float k = 0.1f;
 	const float x0 = 60.0f;
-	return 300.0f/ (1.0f + exp(-k * val));
+	return 300.0f/ (1.0f + exp(-k * (val - x0)));
+}
+
+void copy_dma()
+{
+	HAL_DMA_Start(&dma, (uint32_t)src_buffer, (uint32_t)dst_buffer, BUFFER_SIZE);
+	HAL_DMA_PollForTransfer(&dma, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
 }
 
 int main(void)
@@ -103,6 +115,7 @@ int main(void)
 	__HAL_RCC_ADC1_CLK_ENABLE();
 	__HAL_RCC_TIM2_CLK_ENABLE();
 	__HAL_RCC_TIM4_CLK_ENABLE();
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
 	GPIO_InitTypeDef gpio; // obiekt gpio bêd¹cy konfiguracj¹ portów GPIO
 	gpio.Pin = GPIO_PIN_5;	// konfigurujemy pin 5
@@ -190,7 +203,7 @@ int main(void)
 
 	tim4.Instance = TIM4;
 	tim4.Init.Period = 1000 - 1;
-	tim4.Init.Prescaler = 8000 - 1;
+	tim4.Init.Prescaler = 8 - 1;
 	tim4.Init.ClockDivision = 0;
 	tim4.Init.CounterMode = TIM_COUNTERMODE_UP;
 	tim4.Init.RepetitionCounter = 0;
@@ -254,6 +267,20 @@ int main(void)
 	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_3);
 	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_4);
 
+	dma.Instance = DMA1_Channel1;
+	dma.Init.Direction = DMA_MEMORY_TO_MEMORY;
+	dma.Init.PeriphInc = DMA_PINC_ENABLE;
+	dma.Init.MemDataAlignment = DMA_PDATAALIGN_BYTE;
+	dma.Init.Mode = DMA_NORMAL;
+	dma.Init.Priority = DMA_PRIORITY_HIGH;
+	HAL_DMA_Init(&dma);
+
+    // wypelniamy bufor przykladowymi danymi
+	for(int i = 0; i < BUFFER_SIZE; i++)
+		src_buffer[1] = 100 + i;
+
+	//copy_cpu();
+	copy_dma();
 
 	uint32_t led = 0;
 
