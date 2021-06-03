@@ -287,7 +287,7 @@ int main(void)
 
     // wypelniamy bufor przykladowymi danymi
 	for(int i = 0; i < BUFFER_SIZE; i++)
-		src_buffer[1] = 100 + i;
+		src_buffer[i] = 100 + i;
 
 	uint32_t start_ms = HAL_GetTick();
 	for(int i = 0; i < 100; i++)
