@@ -96,10 +96,20 @@ float calc_pwm(float val)
 	return 300.0f/ (1.0f + exp(-k * (val - x0)));
 }
 
+void copy_cpu()
+{
+	for(int j = 0; j < BUFFER_SIZE; j++)
+		dst_buffer[j] = src_buffer[j];
+}
 void copy_dma()
 {
 	HAL_DMA_Start(&dma, (uint32_t)src_buffer, (uint32_t)dst_buffer, BUFFER_SIZE);
 	HAL_DMA_PollForTransfer(&dma, HAL_DMA_FULL_TRANSFER, HAL_MAX_DELAY);
+}
+
+void print_table(int *tab1, int *tab2){
+	for(int k = 0; k < BUFFER_SIZE; k++)
+		printf("Table 1 item  [%d] = %s | Table 2 item [%d] = %s \r\n",k, tab1[k],k, tab2[k]);
 }
 
 int main(void)
@@ -279,7 +289,7 @@ int main(void)
 	for(int i = 0; i < BUFFER_SIZE; i++)
 		src_buffer[1] = 100 + i;
 
-	//copy_cpu();
+	copy_cpu();
 	copy_dma();
 
 	uint32_t led = 0;
@@ -288,6 +298,7 @@ int main(void)
 	{
 		uint32_t value = HAL_ADC_GetValue(&adc);
 		printf("Adc = %ld (%.3fV)\r\n", value, value * 3.3f / 4095.0f);
+		//print_table(src_buffer, dst_buffer);
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
