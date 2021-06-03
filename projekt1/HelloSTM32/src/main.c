@@ -12,7 +12,7 @@
 #include <string.h>
 #include "stm32f1xx.h"
 
-#define BUFFER_SIZE 32
+#define BUFFER_SIZE 4096
 
 UART_HandleTypeDef uart;
 TIM_HandleTypeDef tim2;
@@ -289,8 +289,15 @@ int main(void)
 	for(int i = 0; i < BUFFER_SIZE; i++)
 		src_buffer[1] = 100 + i;
 
-	copy_cpu();
-	copy_dma();
+	uint32_t start_ms = HAL_GetTick();
+	for(int i = 0; i < 100; i++)
+		copy_cpu();
+
+	uint32_t cpu_ms = HAL_GetTick() - start_ms;
+	start_ms = HAL_GetTick();
+	for(int i = 0; i < 100; i++)
+		copy_dma();
+	uint32_t dma_ms = HAL_GetTick() - start_ms;
 
 	uint32_t led = 0;
 
@@ -299,6 +306,9 @@ int main(void)
 		uint32_t value = HAL_ADC_GetValue(&adc);
 		printf("Adc = %ld (%.3fV)\r\n", value, value * 3.3f / 4095.0f);
 		//print_table(src_buffer, dst_buffer);
+		printf("CPU copy: %lu ms | ", cpu_ms);
+		printf("DMA copy: %lu ms ||  ", dma_ms);
+
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
