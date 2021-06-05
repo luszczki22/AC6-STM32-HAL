@@ -20,6 +20,7 @@ int counter = 0;
 uint16_t adc_value[ADC_CHANNELS];
 
 UART_HandleTypeDef uart;
+ADC_HandleTypeDef adc;
 TIM_HandleTypeDef tim2;
 TIM_HandleTypeDef tim4;
 DMA_HandleTypeDef dma;
@@ -183,7 +184,6 @@ int main(void)
 	adc_clk.AdcClockSelection = RCC_ADCPCLK2_DIV2;
 	HAL_RCCEx_PeriphCLKConfig(&adc_clk);
 
-	ADC_HandleTypeDef adc;
 	adc.Instance = ADC1;
 	adc.Init.ContinuousConvMode = ENABLE;
 	adc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -199,7 +199,7 @@ int main(void)
 	ADC_ChannelConfTypeDef adc_ch;
 	adc_ch.Channel = ADC_CHANNEL_0;
 	adc_ch.Rank = ADC_REGULAR_RANK_1;
-	adc_ch.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
+	adc_ch.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
 	HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
 	adc_ch.Channel = ADC_CHANNEL_1;
@@ -287,7 +287,7 @@ int main(void)
 
 	dma.Instance = DMA1_Channel1;
 	dma.Init.Direction = DMA_PERIPH_TO_MEMORY;
-	dma.Init.PeriphInc = DMA_PINC_ENABLE;
+	dma.Init.PeriphInc = DMA_PINC_DISABLE;
 	dma.Init.MemInc = DMA_MINC_ENABLE;
 	dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
 	dma.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
