@@ -208,7 +208,7 @@ int main(void)
 	HAL_ADCEx_Calibration_Start(&adc);
 
 	//HAL_ADC_Start(&adc);
-	HAL_ADC_Start_DMA(&adc, (uint32_t*)adc_value, ADC_CHANNELS);
+
 
 	tim2.Instance = TIM2;
 	tim2.Init.Period = 2000 - 1;
@@ -323,7 +323,7 @@ int main(void)
 		printf("DMA copy: %lu ms ||  ", dma_ms);
 
 		for(int i=0; i<ADC_CHANNELS;i++)
-			printf("ADC%d = %d \r\n", i, adc_value[i]);
+			printf("ADC%d = %d ", i, adc_value[i]);
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
