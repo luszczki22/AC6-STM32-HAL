@@ -13,14 +13,16 @@
 #include "stm32f1xx.h"
 
 #define BUFFER_SIZE 4096
+#define ADC_CHANNELS 2
+
+volatile uint32_t timer_ms = 0, direction = 0, step = 0;
+int counter = 0;
+uint16_t adc_value[ADC_CHANNELS];
 
 UART_HandleTypeDef uart;
 TIM_HandleTypeDef tim2;
 TIM_HandleTypeDef tim4;
 DMA_HandleTypeDef dma;
-
-volatile uint32_t timer_ms = 0, direction = 0, step = 0;
-int counter = 0;
 
 uint8_t src_buffer[BUFFER_SIZE];
 uint8_t dst_buffer[BUFFER_SIZE];
@@ -200,7 +202,8 @@ int main(void)
 	adc_ch.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
 	HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
-	HAL_ADC_Start(&adc);
+	//HAL_ADC_Start(&adc);
+	HAL_ADC_Start_DMA(&adc, (uint32_t*)adc_value, ADC_CHANNELS);
 
 	tim2.Instance = TIM2;
 	tim2.Init.Period = 2000 - 1;
@@ -309,6 +312,8 @@ int main(void)
 		printf("CPU copy: %lu ms | ", cpu_ms);
 		printf("DMA copy: %lu ms ||  ", dma_ms);
 
+		for(int i=0; i<ADC_CHANNELS;i++)
+			printf("ADC%d = %d \r\n", i, adc_value[i]);
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
