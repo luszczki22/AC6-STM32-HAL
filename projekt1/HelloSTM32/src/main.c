@@ -202,6 +202,11 @@ int main(void)
 	adc_ch.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
 	HAL_ADC_ConfigChannel(&adc, &adc_ch);
 
+	adc_ch.Channel = ADC_CHANNEL_1;
+	adc_ch.Rank = ADC_REGULAR_RANK_2;
+	HAL_ADC_ConfigChannel(&adc, &adc_ch);
+	HAL_ADCEx_Calibration_Start(&adc);
+
 	//HAL_ADC_Start(&adc);
 	HAL_ADC_Start_DMA(&adc, (uint32_t*)adc_value, ADC_CHANNELS);
 
@@ -281,12 +286,17 @@ int main(void)
 	HAL_TIM_PWM_Start(&tim4, TIM_CHANNEL_4);
 
 	dma.Instance = DMA1_Channel1;
-	dma.Init.Direction = DMA_MEMORY_TO_MEMORY;
+	dma.Init.Direction = DMA_PERIPH_TO_MEMORY;
 	dma.Init.PeriphInc = DMA_PINC_ENABLE;
-	dma.Init.MemDataAlignment = DMA_PDATAALIGN_BYTE;
-	dma.Init.Mode = DMA_NORMAL;
+	dma.Init.MemInc = DMA_MINC_ENABLE;
+	dma.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+	dma.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+	dma.Init.Mode = DMA_CIRCULAR;
 	dma.Init.Priority = DMA_PRIORITY_HIGH;
 	HAL_DMA_Init(&dma);
+	__HAL_LINKDMA(&adc, DMA_Handle, dma);
+
+	HAL_ADC_Start_DMA(&adc, (uint32_t*)adc_value, ADC_CHANNELS);
 
     // wypelniamy bufor przykladowymi danymi
 	for(int i = 0; i < BUFFER_SIZE; i++)
