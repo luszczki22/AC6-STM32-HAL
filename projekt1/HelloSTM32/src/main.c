@@ -13,11 +13,11 @@
 #include "stm32f1xx.h"
 
 #define BUFFER_SIZE 4096
-#define ADC_CHANNELS 2
+#define ADC_CHANNELS 4
 
+uint16_t adc_value[ADC_CHANNELS];
 volatile uint32_t timer_ms = 0, direction = 0, step = 0;
 int counter = 0;
-uint16_t adc_value[ADC_CHANNELS];
 
 UART_HandleTypeDef uart;
 ADC_HandleTypeDef adc;
@@ -148,7 +148,7 @@ int main(void)
 	HAL_GPIO_Init(GPIOA, &gpio);
 
 	gpio.Mode = GPIO_MODE_ANALOG;
-	gpio.Pin = GPIO_PIN_0;
+	gpio.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
 	HAL_GPIO_Init(GPIOA, &gpio);
 
 	gpio.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|
@@ -205,6 +205,13 @@ int main(void)
 	adc_ch.Channel = ADC_CHANNEL_1;
 	adc_ch.Rank = ADC_REGULAR_RANK_2;
 	HAL_ADC_ConfigChannel(&adc, &adc_ch);
+
+	adc_ch.Channel = ADC_CHANNEL_2;
+	adc_ch.Rank = ADC_REGULAR_RANK_3;
+	HAL_ADC_ConfigChannel(&adc, &adc_ch);
+
+	//adc_ch.Channel = ADC_CHANNEL_3;
+	//adc_ch.Rank = ADC_REGULAR_RANK_4;
 	HAL_ADCEx_Calibration_Start(&adc);
 
 	//HAL_ADC_Start(&adc);
