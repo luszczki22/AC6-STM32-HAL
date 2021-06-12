@@ -25,6 +25,8 @@ TIM_HandleTypeDef tim2;
 TIM_HandleTypeDef tim4;
 DMA_HandleTypeDef dma;
 
+SPI_HandleTypeDef spi;
+
 uint8_t src_buffer[BUFFER_SIZE];
 uint8_t dst_buffer[BUFFER_SIZE];
 
@@ -129,6 +131,7 @@ int main(void)
 	__HAL_RCC_TIM2_CLK_ENABLE();
 	__HAL_RCC_TIM4_CLK_ENABLE();
 	__HAL_RCC_DMA1_CLK_ENABLE();
+	__HAL_RCC_SPI1_CLK_ENABLE();
 
 	GPIO_InitTypeDef gpio; // obiekt gpio bêd¹cy konfiguracj¹ portów GPIO
 	gpio.Pin = GPIO_PIN_5;	// konfigurujemy pin 5
@@ -150,6 +153,13 @@ int main(void)
 	gpio.Mode = GPIO_MODE_ANALOG;
 	gpio.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
 	HAL_GPIO_Init(GPIOA, &gpio);
+
+	gpio.Mode = GPIO_MODE_AF_PP;
+	gpio.Pin = GPIO_PIN_5|GPIO_PIN_7;  //SCK,MOSI
+	gpio.Pull = GPIO_NOPULL;
+	gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(GPIOA, &gpio);
+
 
 	gpio.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|
 			   GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9;
@@ -321,6 +331,10 @@ int main(void)
 
 	uint32_t led = 0;
 
+	//oc.Pulse = 100;
+	//HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_2);
+	uint16_t brightness = 0;
+
 	while (1)
 	{
 		uint32_t value = HAL_ADC_GetValue(&adc);
@@ -330,7 +344,21 @@ int main(void)
 		printf("DMA copy: %lu ms ||  ", dma_ms);
 
 		for(int i=0; i<ADC_CHANNELS;i++)
+		{
 			printf("ADC%d = %d ", i, adc_value[i]);
+			if(adc_value > 876)
+			{
+				oc.Pulse = 900;
+				HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_2);
+			} else
+			{
+				oc.Pulse = 140;
+				HAL_TIM_OC_ConfigChannel(&tim2, &oc, TIM_CHANNEL_2);
+			}
+
+		}
+
+
 
 		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
 		{
@@ -351,6 +379,8 @@ int main(void)
 			}
 
 		}
+
+
 
 		float r = 50 * (1.0f + sin(counter / 200.0f));
 		float g = 50 * (1.0f + sin(1.5f * counter / 100.0f));
