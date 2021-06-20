@@ -15,6 +15,17 @@
 #define BUFFER_SIZE 4096
 #define ADC_CHANNELS 4
 
+#define MCP_IODIR  	0x00
+#define MCP_IPOL    	0x01
+#define MCP_GPINTEN 	0x02
+#define MCP_DEFVAL  	0x03
+#define MCP_INTCON  	0x04
+#define MCP_GPPU    	0x06
+#define MCP_INTF		0x07
+#define MCP_INTCAP		0x08
+#define MCP_GPIO		0x09
+#define MCP_OLAT		0x0a
+
 uint16_t adc_value[ADC_CHANNELS];
 volatile uint32_t timer_ms = 0, direction = 0, step = 0;
 int counter = 0;
@@ -24,7 +35,6 @@ ADC_HandleTypeDef adc;
 TIM_HandleTypeDef tim2;
 TIM_HandleTypeDef tim4;
 DMA_HandleTypeDef dma;
-
 SPI_HandleTypeDef spi;
 
 uint8_t src_buffer[BUFFER_SIZE];
@@ -117,6 +127,24 @@ void print_table(int *tab1, int *tab2){
 		printf("Table 1 item  [%d] = %s | Table 2 item [%d] = %s \r\n",k, tab1[k],k, tab2[k]);
 }
 
+uint8_t spi_sendrecv(uint8_t byte)
+{
+	uint8_t answer;
+
+	HAL_SPI_TransmitReceive(&spi, &byte, &answer, 1, HAL_MAX_DELAY);
+
+	return answer;
+}
+
+void mcp_write_reg(uint8_t addr, uint8_t value)
+{
+	uint8_t tx_buf[] = {0x40, addr, value};
+
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&spi, tx_buf, 3, HAL_MAX_DELAY);
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0, GPIO_PIN_SET);
+}
+
 int main(void)
 {
 	SystemCoreClock = 8000000;	// taktowanie 8Mhz
@@ -153,6 +181,11 @@ int main(void)
 	gpio.Mode = GPIO_MODE_ANALOG;
 	gpio.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
 	HAL_GPIO_Init(GPIOA, &gpio);
+
+	gpio.Mode = GPIO_MODE_AF_INPUT;
+	gpio.Mode = GPIO_PIN_0;		//CS
+	HAL_GPIO_Init(GPIOC, &gpio);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
 
 	gpio.Mode = GPIO_MODE_AF_PP;
 	gpio.Pin = GPIO_PIN_5|GPIO_PIN_7;  //SCK,MOSI
@@ -315,6 +348,28 @@ int main(void)
 
 	HAL_ADC_Start_DMA(&adc, (uint32_t*)adc_value, ADC_CHANNELS);
 
+	SPI_HandleTypeDef spi;
+
+	spi.Instance = SPI1;
+	spi.Init.Mode = SPI_MODE_MASTER;
+	spi.Init.NSS = SPI_NSS_SOFT;
+	spi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;	//1Mhz
+	spi.Init.Direction = SPI_DIRECTION_2LINES;
+	spi.Init.CLKPhase = SPI_PHASE_1EDGE;
+	spi.Init.CLKPolarity = SPI_POLARITY_LOW;
+	spi.Init.DataSize = SPI_DATASIZE_8BIT;
+	spi.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	spi.Init.TIMode = SPI_TIMODE_DISABLE;
+	spi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	spi.Init.CRCPolynomial = 7;
+	HAL_SPI_Init(&spi);
+
+	__HAL_SPI_ENABLE(&spi);
+
+	mcp_write_reg(MCP_IODIR, 0x01);
+
+
+
     // wypelniamy bufor przykladowymi danymi
 	for(int i = 0; i < BUFFER_SIZE; i++)
 		src_buffer[i] = 100 + i;
@@ -342,6 +397,12 @@ int main(void)
 		//print_table(src_buffer, dst_buffer);
 		printf("CPU copy: %lu ms | ", cpu_ms);
 		printf("DMA copy: %lu ms ||  ", dma_ms);
+
+		//wlacz diode
+		mcp_write_reg(MCP_OLAT, 0x01);
+		HAL_Delay(200);
+		//wylacz diode
+		mcp_write_reg(MCP_OLAT, 0x00);
 
 		for(int i=0; i<ADC_CHANNELS;i++)
 		{
